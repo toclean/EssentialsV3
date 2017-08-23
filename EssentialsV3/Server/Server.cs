@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using DataAccessLayer;
 using DataAccessLayer.Models;
@@ -16,6 +17,7 @@ namespace Server
     {
         private static TcpListener _listener;
         private static UserFactory _userFactory;
+        private static List<ClientConnection> _clientList = new List<ClientConnection>();
 
         public static Task<Socket> AcceptClient(TcpListener listener)
         {
@@ -35,14 +37,13 @@ namespace Server
             return message.Trim('\0');
         }
 
-        public static bool AcceptConnection(string message)
+        public static bool AcceptConnection(Packet message)
         {
             var user = new User();
-            var raw = JsonConvert.DeserializeObject<Connect>(message);
             user = new User
             {
-                Username = raw.Username,
-                Password = raw.Password
+                Username = message.Username,
+                Password = message.Password
             };
 
             if (_userFactory.IsUser(user))
@@ -56,7 +57,19 @@ namespace Server
 
         public static void DisconnectConnection(User user, Task<Socket> client)
         {
-            
+            if (_userFactory.IsUser(user))
+            {
+                client.Result.Disconnect(true);
+                Console.WriteLine($"[REMOVE_CLIENT] -> {client.Result.RemoteEndPoint}");
+            }
+        }
+
+        public static void BroadCastToClients(string message)
+        {
+            foreach (var client in _clientList)
+            {
+                client.Client.Send(Encoding.ASCII.GetBytes(message));
+            }
         }
 
         public static void Main(string[] args)
@@ -78,19 +91,34 @@ namespace Server
                     // Login user
                     new Task(() =>
                     {
-                        var message = JsonConvert.DeserializeObject(ReadMessage(client)) as Packet;
-                        if (message?.Type == "Connect")
+
+                        while (true)
                         {
-                            AcceptConnection(message.ToString());
-                        }else if (message?.Type == "Disconnect")
-                        {
-                            DisconnectConnection(new User
+                            var message = JsonConvert.DeserializeObject<Packet>(ReadMessage(client));
+
+                            if (message?.Type == "Connect")
+                            {
+                                AcceptConnection(message);
+                                _clientList.Add(new ClientConnection
                                 {
-                                    Username = ((Connect) message).Username,
-                                    Password = ((Connect) message).Password
-                                },
-                                client);
+                                    Client = client.Result,
+                                    Username = message.Username
+                                });
+                            }
+                            else if (message?.Type == "Disconnect")
+                            {
+                                DisconnectConnection(new User
+                                {
+                                    Username = message.Username
+                                }, client);
+                                _clientList.RemoveAll(x => x.Client == client.Result && x.Username == message.Username);
+                                break;
+                            }else if (message?.Type == "Message")
+                            {
+                                BroadCastToClients("TEST");
+                            }
                         }
+
                     }).Start();
 
                     clientCount++;

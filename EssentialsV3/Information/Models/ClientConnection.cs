@@ -10,6 +10,6 @@ namespace Information.Models
     public class ClientConnection
     {
         public string Username { get; set; }
-        public TcpClient Client { get; set; }
+        public Socket Client { get; set; }
     }
 }

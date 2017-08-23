@@ -22,7 +22,7 @@ namespace Information
     {
         public Packet ConnectPacket(PacketType type, User user)
         {
-            return new Connect
+            return new Packet()
             {
                 Type = type.ToString(),
                 Username = user.Username,

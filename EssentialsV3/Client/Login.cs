@@ -39,9 +39,8 @@ namespace Client
 
         private void loginBtn_Click(object sender, EventArgs e)
         {
-            ///if (string.IsNullOrEmpty(usernameTb.Text) || string.IsNullOrEmpty(passwordTb.Text)) return;
-            //if (new UserFactory().GetUser(usernameTb.Text, passwordTb.Text).Count < 1) return;
-            //if (User.Connected) return;
+            if (string.IsNullOrEmpty(usernameTb.Text) || string.IsNullOrEmpty(passwordTb.Text)) return;
+            if (new UserFactory().GetUser(usernameTb.Text, passwordTb.Text).Count < 1) return;
             if (!Client.Connected)
             {
                 Client = new TcpClient();
@@ -58,6 +57,7 @@ namespace Client
         private void registerLl_Click(object sender, EventArgs e)
         {
             // Show registration form
+            SendServerMessage(JsonConvert.SerializeObject(new PacketFactory().ConnectPacket(PacketType.Message, new User())));
         }
 
         private void Login_FormClosing(object sender, FormClosingEventArgs e)
