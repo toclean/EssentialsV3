@@ -14,6 +14,7 @@ namespace Information
     {
         Connect,
         Disconnect,
+        Accepted,
         Message,
         Status
     }
@@ -22,7 +23,7 @@ namespace Information
     {
         public Packet ConnectPacket(PacketType type, User user)
         {
-            return new Packet()
+            return new Packet
             {
                 Type = type.ToString(),
                 Username = user.Username,
@@ -31,6 +32,15 @@ namespace Information
         }
 
         public Packet DisconnectPacket(PacketType type, User user)
+        {
+            return new Packet
+            {
+                Type = type.ToString(),
+                Username = user.Username
+            };
+        }
+
+        public Packet AcceptedPacket(PacketType type, User user)
         {
             return new Packet
             {

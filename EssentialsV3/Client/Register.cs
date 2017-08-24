@@ -49,6 +49,7 @@ namespace Client
         private void Register_FormClosing(object sender, FormClosingEventArgs e)
         {
             _formProvider.Login.Close();
+            _formProvider.Chat.Close();
         }
     }
 }

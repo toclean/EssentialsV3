@@ -26,6 +26,11 @@ namespace Client
             _formProvider.Login.Show();
         }
 
+        public TcpClient GetTcpClient()
+        {
+            return _client;
+        }
+
         private void Login_Shown(object sender, EventArgs e)
         {
             _client = new TcpClient();
@@ -40,19 +45,22 @@ namespace Client
 
         private void loginBtn_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(usernameTb.Text) || string.IsNullOrEmpty(passwordTb.Text)) return;
-            if (UserFactory.GetUser(new User{Username = usernameTb.Text, Password = passwordTb.Text}).Count < 1) return;
-            if (!_client.Connected)
-            {
-                _client = new TcpClient();
-                _client.Connect(Dns.GetHostAddresses("localhost"), 1400);
-            }
+            //if (string.IsNullOrEmpty(usernameTb.Text) || string.IsNullOrEmpty(passwordTb.Text)) return;
+            //if (UserFactory.GetUser(new User{Username = usernameTb.Text, Password = passwordTb.Text}).Count < 1) return;
+            //if (!_client.Connected)
+            //{
+            //    _client = new TcpClient();
+            //    _client.Connect(Dns.GetHostAddresses("localhost"), 1400);
+            //}
 
-            SendServerMessage(JsonConvert.SerializeObject(PacketFactory.ConnectPacket(PacketType.Connect, new User
-            {
-                Username = usernameTb.Text,
-                Password = passwordTb.Text
-            })));
+            //SendServerMessage(JsonConvert.SerializeObject(PacketFactory.ConnectPacket(PacketType.Connect, new User
+            //{
+            //    Username = usernameTb.Text,
+            //    Password = passwordTb.Text
+            //})));
+
+            _formProvider.Login.Hide();
+            _formProvider.Chat.Show();
         }
 
         private void registerLl_Click(object sender, EventArgs e)
@@ -70,6 +78,7 @@ namespace Client
                 Password = passwordTb.Text
             })));
             _formProvider.Register.Close();
+            _formProvider.Chat.Close();
         }
     }
 }

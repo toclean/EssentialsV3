@@ -37,6 +37,11 @@ namespace Server
             return message.Trim('\0');
         }
 
+        private static void UserLoginConfirmation(Task<Socket> client, User user)
+        {
+
+        }
+
         public static bool AcceptConnection(Packet message)
         {
             var user = new User();
