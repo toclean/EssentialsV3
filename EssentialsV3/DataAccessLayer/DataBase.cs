@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace DataAccessLayer
 {
@@ -12,8 +13,10 @@ namespace DataAccessLayer
 
         public static SqlConnection Connect()
         {
-            var connection = new SqlConnection("Server=DESKTOP-5TM1PFC\\SQLEXPRESS;Database=ChatProgram;User Id=remote;Password=remote;");
-            connection.Open();
+            var connection =
+                    new SqlConnection(
+                        "Server=DESKTOP-5TM1PFC\\SQLEXPRESS;Database=ChatProgram;User Id=remote;Password=remote;");
+                connection.Open();
             return connection;
         }
 

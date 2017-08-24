@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Data.SqlClient;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using DataAccessLayer;
 using DataAccessLayer.Models;
@@ -18,21 +13,27 @@ namespace Client
 {
     public partial class Login : Form
     {
-        public static TcpClient Client;
+        private static TcpClient _client;
+        private static FormProvider _formProvider;
+        //private static SqlConnection _connection = DataBase.Connect();
+        private static readonly UserFactory UserFactory = new UserFactory();
+        private static readonly PacketFactory PacketFactory = new PacketFactory();
 
         public Login()
         {
             InitializeComponent();
+            _formProvider = new FormProvider(this);
+            _formProvider.Login.Show();
         }
 
         private void Login_Shown(object sender, EventArgs e)
         {
-            Client = new TcpClient();
+            _client = new TcpClient();
         }
 
         private void SendServerMessage(string message)
         {
-            var stream = Client.GetStream();
+            var stream = _client.GetStream();
             var text = Encoding.ASCII.GetBytes(message);
             stream.Write(text, 0, text.Length);
         }
@@ -40,14 +41,14 @@ namespace Client
         private void loginBtn_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(usernameTb.Text) || string.IsNullOrEmpty(passwordTb.Text)) return;
-            if (new UserFactory().GetUser(usernameTb.Text, passwordTb.Text).Count < 1) return;
-            if (!Client.Connected)
+            if (UserFactory.GetUser(new User{Username = usernameTb.Text, Password = passwordTb.Text}).Count < 1) return;
+            if (!_client.Connected)
             {
-                Client = new TcpClient();
-                Client.Connect(Dns.GetHostAddresses("localhost"), 1400);
+                _client = new TcpClient();
+                _client.Connect(Dns.GetHostAddresses("localhost"), 1400);
             }
 
-            SendServerMessage(JsonConvert.SerializeObject(new PacketFactory().ConnectPacket(PacketType.Connect, new User
+            SendServerMessage(JsonConvert.SerializeObject(PacketFactory.ConnectPacket(PacketType.Connect, new User
             {
                 Username = usernameTb.Text,
                 Password = passwordTb.Text
@@ -56,18 +57,19 @@ namespace Client
 
         private void registerLl_Click(object sender, EventArgs e)
         {
-            // Show registration form
-            SendServerMessage(JsonConvert.SerializeObject(new PacketFactory().ConnectPacket(PacketType.Message, new User())));
+            _formProvider.Login.Hide();
+            _formProvider.Register.Show();
         }
 
         private void Login_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!Client.Connected) return;
-            SendServerMessage(JsonConvert.SerializeObject(new PacketFactory().DisconnectPacket(PacketType.Disconnect, new User
+            if (!_client.Connected) return;
+            SendServerMessage(JsonConvert.SerializeObject(PacketFactory.DisconnectPacket(PacketType.Disconnect, new User
             {
                 Username = usernameTb.Text,
                 Password = passwordTb.Text
             })));
+            _formProvider.Register.Close();
         }
     }
 }

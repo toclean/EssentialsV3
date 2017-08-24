@@ -24,15 +24,15 @@ namespace DataAccessLayer
             return users;
         }
 
-        public DataRowCollection GetUser(string username, string password)
+        public DataRowCollection GetUser(User user)
         {
             var command = new SqlCommand("SELECT * " +
                                          "FROM USERS " +
                                          "WHERE USERNAME = @USERNAME " +
                                          "AND PASSWORD = @PASSWORD",
                                          DataBase.Connect());
-            command.Parameters.AddWithValue("@USERNAME", username);
-            command.Parameters.AddWithValue("@PASSWORD", password);
+            command.Parameters.AddWithValue("@USERNAME", user.Username);
+            command.Parameters.AddWithValue("@PASSWORD", user.Password);
             var table = new DataTable();
             var adapter = new SqlDataAdapter(command);
             adapter.Fill(table);
@@ -54,7 +54,7 @@ namespace DataAccessLayer
             return table.Rows.Count > 0;
         }
 
-        public void CreateUser(string username, string password, string settings)
+        public void CreateUser(User user, string settings)
         {
             var command = new SqlCommand("INSERT INTO USERS " +
                                          "(USERID, USERNAME, PASSWORD, DATE, SETTINGS) " +
@@ -62,8 +62,8 @@ namespace DataAccessLayer
                                          DataBase.Connect());
 
             command.Parameters.AddWithValue("@USERID", Guid.NewGuid());
-            command.Parameters.AddWithValue("@USERNAME", username);
-            command.Parameters.AddWithValue("@PASSWORD", password);
+            command.Parameters.AddWithValue("@USERNAME", user.Username);
+            command.Parameters.AddWithValue("@PASSWORD", user.Password);
             command.Parameters.AddWithValue("@DATE", DateTime.Now);
             command.Parameters.AddWithValue("@SETTINGS", settings);
             command.ExecuteNonQuery();
